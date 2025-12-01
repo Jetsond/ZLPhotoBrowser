@@ -409,6 +409,8 @@ open class ZLEditImageViewController: UIViewController {
     @objc public var drawLineWidth: CGFloat = 6
     
     @objc public var mosaicLineWidth: CGFloat = 25
+    /// 是否自定义结束返回
+    @objc public var isCustomFinishBlock: Bool = false
     
     @objc public var editFinishBlock: ((UIImage, ZLEditImageModel?) -> Void)?
     
@@ -429,7 +431,10 @@ open class ZLEditImageViewController: UIViewController {
         cleanToolViewStateTimer()
         zl_debugPrint("ZLEditImageViewController deinit")
     }
-    
+    // MARK: - 自定义消失
+    @objc public func dismissEditImageVC(completion: (() -> Void)? = nil){
+        dismiss(animated: animate, completion: completion)
+    }
     @objc public class func showEditImageVC(
         parentVC: UIViewController?,
         animate: Bool = false,
@@ -1159,9 +1164,15 @@ open class ZLEditImageViewController: UIViewController {
             if let nav = presentingViewController as? ZLImageNavController,
                nav.topViewController is ZLPhotoPreviewController {
                 editFinishBlock?(resImage, editModel)
-                dismiss(animated: animate)
+                if(!isCustomFinishBlock){
+                    dismiss(animated: animate)
+                }
             } else {
-                dismiss(animated: animate) {
+                if(!isCustomFinishBlock){
+                    dismiss(animated: animate) {
+                        self.editFinishBlock?(resImage, editModel)
+                    }
+                }else{
                     self.editFinishBlock?(resImage, editModel)
                 }
             }
